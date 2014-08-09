@@ -42,7 +42,7 @@ support the Transit MIME types: `application/transit+json` and
 (defresource my-awesom-resource
   :available-media-types ["application/transit+json"
                           "application/transit+msgpack"
-			  "application/json"]
+                          "application/json"]
   :handle-ok ["this" "is" "awesome"])
 ```
 
