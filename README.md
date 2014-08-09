@@ -40,7 +40,9 @@ support the Transit MIME types: `application/transit+json` and
 
 ```clojure
 (defresource my-awesom-resource
-  :available-media-types ["application/transit+json" "application/transit+msgpack" "application/json"]
+  :available-media-types ["application/transit+json"
+                          "application/transit+msgpack"
+			  "application/json"]
   :handle-ok ["this" "is" "awesome"])
 ```
 
@@ -56,7 +58,8 @@ JSON output, a client needs to include "verbose" as part of the "Accept"
 header.  For example:
 
 ```
-curl -H "Accept: application/transit+json;verbose" http://localhost:3000/hello
+curl -H "Accept: application/transit+json;verbose" \
+    http://localhost:3000/hello
 ```
 
 ## To-do
