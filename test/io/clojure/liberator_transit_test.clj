@@ -8,9 +8,9 @@
 ; license.  You must not remove this notice, or any other, from this software.
 
 (ns io.clojure.liberator-transit-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.data.generators :as data-gen]
+            [clojure.java.io :as io]
             [clojure.test :refer :all]
-            [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
@@ -150,34 +150,29 @@
                   [1 (gen/return Double/NaN)]]))
 
 (def big-decimal-generator
-  (gen/bind (gen/tuple normal-double-generator normal-double-generator normal-double-generator)
-            (fn [[d1 d2 d3]]
-              (let [bd1 (java.math.BigDecimal. d1)
-                    bd2 (java.math.BigDecimal. d2)
-                    bd3 (java.math.BigDecimal. d3)]
-                (gen/return (.add (.multiply bd1 bd2) bd3))))))
+  (gen/make-gen
+    (fn [^java.util.Random rnd size]
+      (binding [data-gen/*rnd* rnd]
+        [(data-gen/bigdec) []]))))
 
 (def big-int-generator
   (gen/make-gen
     (fn [^java.util.Random rnd size]
-      [(java.math.BigInteger. size rnd) []])))
+      (binding [data-gen/*rnd* rnd]
+        [(data-gen/bigint) []]))))
+
 
 (def time-generator
-  (gen/bind (gen/tuple gen/int gen/int gen/int gen/int gen/int gen/int)
-            (fn [[yr mo day hr min sec]]
-              (let [delta (* 1000 sec)
-                    delta (+ delta (* 1000 60 min))
-                    delta (+ delta (* 1000 60 60 hr))
-                    delta (+ delta (* 1000 60 60 24 day))
-                    delta (+ delta (* 1000 60 60 24 30 mo))
-                    delta (+ delta (* 1000 60 60 24 30 365 yr))
-                    millis (+ delta (System/currentTimeMillis))]
-                (gen/return (java.util.Date. millis))))))
+  (gen/make-gen
+    (fn [^java.util.Random rnd size]
+      (binding [data-gen/*rnd* rnd]
+        [(data-gen/date) []]))))
 
 (def uuid-generator
   (gen/make-gen
     (fn [^java.util.Random rnd size]
-      [(java.util.UUID. (.nextLong rnd) (.nextLong rnd)) []])))
+      (binding [data-gen/*rnd* rnd]
+        [(data-gen/uuid) []]))))
 
 (def uri-scheme-generator
   (gen/one-of [nil-generator (gen/fmap clojure.string/join (gen/not-empty (gen/vector gen/char-alpha)))]))
@@ -197,7 +192,7 @@
 (def simple-type-generator
   (gen/frequency [[10 gen/simple-type]
                   [1 nil-generator]
-                  [1 double-generator]   
+                  [1 double-generator]
                   [1 float-generator]
                   [1 big-decimal-generator]
                   [1 big-int-generator]
@@ -226,13 +221,13 @@
 (defspec generated-sequences
   80
   (prop/for-all [v sequence-generator]
-    (= (jsonify v) (to-string ((test-resource v) (json-request))))  
+    (= (jsonify v) (to-string ((test-resource v) (json-request))))
     (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
     (= (packify v) (to-bytes ((test-resource v) (msgpack-request))))))
 
 (defspec generated-maps
   80
   (prop/for-all [v (gen/map simple-type-generator content-generator)]
-    (= (jsonify v) (to-string ((test-resource v) (json-request))))  
+    (= (jsonify v) (to-string ((test-resource v) (json-request))))
     (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
     (= (packify v) (to-bytes ((test-resource v) (msgpack-request))))))
