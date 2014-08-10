@@ -61,6 +61,16 @@
       json-verbose-is-default? :json-verbose
       :default :json)))
 
+;; If we return an input stream, Liberator will attempt to add a charset
+;; parameter to the Content-Type header returned to the client.  For a transit
+;; response, this is undesireable.  As a result, the TransitResponse type will
+;; ensure that does not occur.
+(defrecord TransitResponse [bytes]
+  liberator.representation.Representation
+  (as-response [_ context]
+    {:body bytes
+     :headers {"Content-Type" (get-in context [:representation :media-type])}}))
+
 (defn ^:private render-as-transit
   "Renders the given `data` to an input stream.  Liberator will pass this
   stream to Ring, which will write the contents into the response.  `type`
@@ -73,7 +83,7 @@
         buffer (ByteArrayOutputStream. initial-size)
         writer (transit/writer buffer type)]
     (transit/write writer data)
-    (ByteArrayInputStream. (.toByteArray buffer))))
+    (->TransitResponse (ByteArrayInputStream. (.toByteArray buffer)))))
 
 ;; Renders a map using the JSON transit encoding.  If the original "Accept"
 ;; header included "verbose", i.e. `application/transit+json;verbose`, then

@@ -195,3 +195,16 @@
            {:foo 42 :bar ["42" :foo :bar]} (json-request)
            {:foo 42 :bar ["42" :foo :bar]} (json-request :verbose)
            {:foo 42 :bar ["42" :foo :bar]} (msgpack-request)))))
+
+(deftest response-headers
+  (are [media-type data request] (= {"Content-Type" media-type
+                                     "Vary" "Accept"}
+                                    (:headers ((test-resource data) request)))
+       ; sequences
+       "application/transit+json"    [] (json-request)
+       "application/transit+json"    [] (json-request :verbose)
+       "application/transit+msgpack" [] (msgpack-request)
+       ; maps
+       "application/transit+json"    {} (json-request)
+       "application/transit+json"    {} (json-request :verbose)
+       "application/transit+msgpack" {} (msgpack-request)))
