@@ -62,15 +62,68 @@ curl -H "Accept: application/transit+json;verbose" \
     http://localhost:3000/hello
 ```
 
+You can completely disable verbose JSON output by setting the
+`:allow-json-verbose?` option to a false value.  Additionally, by setting
+`"josn-verbose-is-defaultt?` to a true value, JSON responses will be verbose by
+default.  See the next section about setting options for more information.
+
+### Setting options
+
+You can set various options to modify the behaviour of `liberator-transit`.
+The supported options include:
+
+* `:allow-json-verbose?`: if false, do not ever produce verbose JSON output.
+* `:json-verbose-is-default?`: if true, produce verbose JSON output by default.
+* `:initial-buffer-size`: The initial buffer size to use when generating the
+  output.  Note that the buffer will automatically grow as needed.  It probably
+  only makes sense to change this if you are serialising very large objects.
+
+liberator-transit looks for its options in the Liberator context under they key
+`:liberator-transit`.  As such you can set options anywhere in your resource
+where you can modify the context.  For example, the following sample resource
+will modify the context as part of the `exists?` decision:
+
+```clojure
+(defresource hello-resource [name]
+  :exists? {:liberator-transit {:allow-json-verbose? false}}
+  :available-media-types ["application/transit+json"]
+  :handle-ok {:message (str "Hello, " name \!)})
+```
+
+Additionally, you can set options by specifying a `as-response` function.
+transit-liberator provides `io.clojure.transit-liberator/as-response`,
+available in two different arities.  The unary form simply takes an options map
+and invokes Liberator’s default behaviour.  The following is equivalent to the
+previous example:
+
+```clojure
+(defresource hello-resource [name]
+  :available-media-types ["application/transit+json"]
+  :handle-ok {:message (str "Hello, " name \!)}
+  :as-response (transit-liberator/as-response {:allow-json-verbose? false}))
+```
+
+Additionally, in the case you already have a custom `as-response` function you
+would like to use, you can wrap it using transit-liberator’s `as-response`:
+
+```clojure
+(defresource hello-resource [name]
+  :available-media-types ["application/transit+json"]
+  :handle-ok {:message (str "Hello, " name \!)}
+  :as-response (transit-liberator/as-response {:allow-json-verbose? false}
+                                              my-as-response))
+```
+
+Note that any options specified elsewhere in your resource definition will
+override any options set as part of the `as-response` call.
+
+
 ## To-do
 
 I am not sure what might be desired by user of the library, but a few ideas I
 have include:
 
-* Support configuration of liberator-transit via the Liberator context.  Possible cofiguration could include:
-  * Disabling verbose JSON output
-  * Making verbose JSON the default
-  * Configuring the initial Transit buffer size
+* Support configuration of Transit write handlers (coming in 0.3.0)
 * Write a proper URI generator for the tests
 * Write a Transit link generator for the tests
 
