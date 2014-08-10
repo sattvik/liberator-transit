@@ -20,9 +20,9 @@
   stream to Ring, which will write the contents into the response.  `type`
   must be a supported transit-clj writer type, e.g. `:json`."
   [data type]
-  (let [buffer (ByteArrayOutputStream. 4096)        
-        writer (transit/writer buffer type)]        
-    (transit/write writer data)                     
+  (let [buffer (ByteArrayOutputStream. 4096)
+        writer (transit/writer buffer type)]
+    (transit/write writer data)
     (ByteArrayInputStream. (.toByteArray buffer))))
 
 ;; Renders a map using the JSON transit encoding.  If the original "Accept"
@@ -33,7 +33,7 @@
   [data context]
   (let [accept-header (get-in context [:request :headers "accept"])]
     (if (pos? (.indexOf accept-header "verbose"))
-      (render-as-transit data :json-verbose)  
+      (render-as-transit data :json-verbose)
       (render-as-transit data :json))))
 
 ;; Renders a map using the MessagePack transit encoding.
@@ -49,7 +49,7 @@
   [data context]
   (let [accept-header (get-in context [:request :headers "accept"])]
     (if (pos? (.indexOf accept-header "verbose"))
-      (render-as-transit data :json-verbose)  
+      (render-as-transit data :json-verbose)
       (render-as-transit data :json))))
 
 ;; Renders a sequence using the MessagePack transit encoding.
