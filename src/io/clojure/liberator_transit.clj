@@ -11,7 +11,7 @@
   "Main namespace for liberator-transit.  Just adds new methods to the
   multimethods that liberator uses to render maps and sequences."
   {:author "Daniel Solano Gómez"}
-  (:require [liberator.representation :refer [render-map-generic render-seq-generic]]
+  (:require [liberator.representation :as liberator :refer [render-map-generic render-seq-generic]]
             [cognitect.transit :as transit])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
@@ -110,3 +110,28 @@
 (defmethod render-seq-generic "application/transit+msgpack"
   [data context]
   (render-as-transit context data :msgpack))
+
+(defn as-response
+  "This convenience function allows you to specify options to liberator-transit
+  in one handy place.  As an alternative to specifying liberator-transit options
+  elsewere in your resource, you can call this function as the value of
+  `:as-response` key, as in:
+
+      (defresource foo
+        ; …
+        :as-response (as-response {:allow-json-verbose? false})
+
+  Note that if you do specify liberator-transit options elsewhere in your
+  resource, they will override the options set here.
+
+  Additionally, if you already have an `as response` function you would like to
+  use, can wrap it with this one.  Otherwsie, this will just use Liberator’s
+  default implementation."
+  ([options]
+   (as-response options liberator/as-response))
+  ([options as-response-fn]
+   (fn [data {context-options :liberator-transit :as context}]
+     (as-response-fn data
+                     (assoc context
+                            :liberator-transit
+                            (merge options context-options))))))

@@ -13,10 +13,11 @@
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.properties :as prop]
             [cognitect.transit :as transit]
-            [io.clojure.liberator-transit]
+            [io.clojure.liberator-transit :as lt]
             [io.clojure.liberator-transit.generators :as gen]
             [liberator.core :as liberator :refer [defresource]]
             [liberator.dev :refer [wrap-trace]]
+            [liberator.representation :as rep]
             [ring.mock.request :as mock]))
 
 (defresource test-resource [value]
@@ -208,3 +209,49 @@
        "application/transit+json"    {} (json-request)
        "application/transit+json"    {} (json-request :verbose)
        "application/transit+msgpack" {} (msgpack-request)))
+
+(deftest as-response
+  (testing "With options"
+    (let [resource (fn [v]
+                     (liberator/resource
+                       :available-media-types ["application/transit+json"]
+                       :handle-ok v
+                       :as-response (lt/as-response {:json-verbose-is-default? true})))]
+      (are [json data] (= json
+                          (to-string ((resource data) (json-request)))
+                          (to-string ((resource data) (json-request :verbose))))
+           "[\"~:foo\",\"~:foo\"]" [:foo :foo]
+           "{\"foo\":1}" {"foo" 1})))
+  (testing "Will not override options"
+    (let [resource (fn [v]
+                     (liberator/resource
+                       :exists? {:liberator-transit {:allow-json-verbose? false}}
+                       :available-media-types ["application/transit+json"]
+                       :handle-ok v
+                       :as-response (lt/as-response {:json-verbose-is-default? true})))]
+      (are [json data] (= json
+                          (to-string ((resource data) (json-request)))
+                          (to-string ((resource data) (json-request :verbose))))
+           "[\"~:foo\",\"^0\"]" [:foo :foo]
+           "[\"^ \",\"foo\",1]" {"foo" 1})))
+  (testing "As a decorator"
+    (let [resource (fn [v]
+                     (liberator/resource
+                       :available-media-types ["application/transit+json"
+                                               "application/transit+msgpack"]
+                       :handle-ok v
+                       :as-response (lt/as-response {:json-verbose-is-default? true}
+                                                    (fn [d c]
+                                                      (if (= d [:foo])
+                                                        (rep/as-response [:bar] c)
+                                                        (rep/as-response d c))))))]
+      (are [json data] (= json
+                          (to-string ((resource data) (json-request)))
+                          (to-string ((resource data) (json-request :verbose))))
+           "[\"~:foo\",\"~:foo\"]" [:foo :foo]
+           "{\"foo\":1}" {"foo" 1}
+           "[\"~:bar\"]" [:foo])
+      (are [msgpack data] (= msgpack (to-bytes ((resource data) (msgpack-request))))
+           [0x92 0xa5 0x7e 0x3a 0x66 0x6f 0x6f 0xa2 0x5e 0x30] [:foo :foo]
+           [0x81 0xa3 0x66 0x6f 0x6f 0x01] {"foo" 1}
+           [0x91 0xa5 0x7e 0x3a 0x62 0x61 0x72] [:foo]))))
