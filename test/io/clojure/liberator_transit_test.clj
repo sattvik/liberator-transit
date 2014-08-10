@@ -110,7 +110,7 @@
            "{\"foo\":1}" {"foo" 1}
            "{\"~:a\":{},\"~:b\":42}" {:a {} :b 42}
            ))
-    (testing "messagepack-verbose encoding"
+    (testing "messagepack encoding"
       (are [msgpack data] (= msgpack (to-bytes ((test-resource data) (msgpack-request))))
            [0x80] {}
            [0x81 0xa3 0x66 0x6f 0x6f 0x01] {"foo" 1}
