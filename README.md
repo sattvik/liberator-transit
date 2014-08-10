@@ -100,7 +100,8 @@ previous example:
 (defresource hello-resource [name]
   :available-media-types ["application/transit+json"]
   :handle-ok {:message (str "Hello, " name \!)}
-  :as-response (transit-liberator/as-response {:allow-json-verbose? false}))
+  :as-response (transit-liberator/as-response
+                 {:allow-json-verbose? false}))
 ```
 
 Additionally, in the case you already have a custom `as-response` function you
@@ -110,8 +111,9 @@ would like to use, you can wrap it using transit-liberator’s `as-response`:
 (defresource hello-resource [name]
   :available-media-types ["application/transit+json"]
   :handle-ok {:message (str "Hello, " name \!)}
-  :as-response (transit-liberator/as-response {:allow-json-verbose? false}
-                                              my-as-response))
+  :as-response (transit-liberator/as-response
+                 {:allow-json-verbose? false}
+                 my-as-response))
 ```
 
 Note that any options specified elsewhere in your resource definition will
