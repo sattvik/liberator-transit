@@ -18,7 +18,7 @@
 (def default-options
   "The default options for liberator-transit.
 
-  * `:support-json-verbose?`: if false, do not ever produce verrbose JSON
+  * `:allow-json-verbose?`: if false, do not ever produce verrbose JSON
     output
   * `:json-verbose-is-default?`: if true, produce verbose JSON output by
     default.
@@ -26,7 +26,7 @@
     output.  Note that the buffer will automatically grow as needed.  It
     probably only makes sense to change this if you are serialising very large
     objects."
-  {:support-json-verbose? true
+  {:allow-json-verbose? true
    :json-verbose-is-default? false
    :initial-buffer-size 4096})
 
@@ -45,18 +45,18 @@
   options are stored in the context map under the `:liberator-transit` key.
   The determination is done as follows:
 
-  1. If `:support-json-verbose?` option is set to a false value, return`:json`.
+  1. If `:allow-json-verbose?` option is set to a false value, return`:json`.
   2. If the request contains \"verbose\" as part of the \"Accept\" header, then
      return `:json-verbose`.
   3. If `:json-verbose-is-default?` option is set to a true value,
      return`:json-verbose`.
   4. If none of the above apply, return `:json`."
   [{:keys [liberator-transit request]}]
-  (let [{:keys [support-json-verbose?
+  (let [{:keys [allow-json-verbose?
                 json-verbose-is-default?]} (merge default-options
                                                   liberator-transit)]
     (cond
-      (not support-json-verbose?) :json
+      (not allow-json-verbose?) :json
       (requested-verbose? request) :json-verbose
       json-verbose-is-default? :json-verbose
       :default :json)))

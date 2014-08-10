@@ -153,10 +153,10 @@
                        :actual response#})))))
 
 (deftest liberator-transit-options
-  (testing "support-json-verbose?"
+  (testing "allow-json-verbose?"
     (let [resource (fn [v]
                      (liberator/resource
-                       :exists? {:liberator-transit {:support-json-verbose? false}}
+                       :exists? {:liberator-transit {:allow-json-verbose? false}}
                        :available-media-types ["application/transit+json"]
                        :handle-ok (fn [context] v)))]
       (are [json data] (= json
