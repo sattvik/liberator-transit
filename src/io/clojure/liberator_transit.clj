@@ -18,7 +18,7 @@
 (def default-options
   "The default options for liberator-transit.
 
-  * `:allow-json-verbose?`: if false, do not ever produce verrbose JSON
+  * `:allow-json-verbose?`: if false, do not ever produce verbose JSON
     output
   * `:json-verbose-is-default?`: if true, produce verbose JSON output by
     default.
