@@ -169,7 +169,7 @@
                      (liberator/resource
                        :exists? {:liberator-transit {:json-verbose-is-default? true}}
                        :available-media-types ["application/transit+json"]
-                       :handle-ok (fn [context] v)))]
+                       :handle-ok v))]
       (are [json data] (= json
                           (to-string ((resource data) (json-request)))
                           (to-string ((resource data) (json-request :verbose))))
