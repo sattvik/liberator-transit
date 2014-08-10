@@ -178,15 +178,12 @@
   ; The test to see if the initial-buffer-size can be set is accomplished by
   ; setting something that is clearly invalid and will throw an exception.
   (testing "initial-buffer-size"
-    (let [expected? (fn [{:keys [status]}]
-                      (and (= 500 status)
-                           (= "foo" status)))
-          resource (fn [v]
+    (let [resource (fn [v]
                      (liberator/resource
                        :exists? {:liberator-transit {:initial-buffer-size "forty-two"}}
                        :available-media-types ["application/transit+json"
                                                "application/transit+msgpack"]
-                       :handle-ok (fn [_] v)
+                       :handle-ok v
                        :handle-exception (fn [{:keys [exception]}]
                                            (.getMessage exception))))]
       (are [data request] (invalid-buffer-error? ((resource data) request))
