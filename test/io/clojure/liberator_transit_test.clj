@@ -15,7 +15,7 @@
             [cognitect.transit :as transit]
             [io.clojure.liberator-transit]
             [io.clojure.liberator-transit.generators :as gen]
-            [liberator.core :refer [defresource]]
+            [liberator.core :as liberator :refer [defresource]]
             [liberator.dev :refer [wrap-trace]]
             [ring.mock.request :as mock]))
 
@@ -128,3 +128,27 @@
     (= (jsonify v) (to-string ((test-resource v) (json-request))))
     (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
     (= (packify v) (to-bytes ((test-resource v) (msgpack-request))))))
+
+(deftest json-verbose-options
+  (testing "support-json-verbose?"
+    (let [resource (fn [v]
+                     (liberator/resource
+                       :exists? {:liberator-transit {:support-json-verbose? false}}
+                       :available-media-types ["application/transit+json"]
+                       :handle-ok (fn [context] v)))]
+      (are [json data] (= json
+                          (to-string ((resource data) (json-request)))
+                          (to-string ((resource data) (json-request :verbose))))
+           "[\"~:foo\",\"^0\"]" [:foo :foo]
+           "[\"^ \",\"foo\",1]" {"foo" 1})))
+  (testing "json-verbose-is-default?"
+    (let [resource (fn [v]
+                     (liberator/resource
+                       :exists? {:liberator-transit {:json-verbose-is-default? true}}
+                       :available-media-types ["application/transit+json"]
+                       :handle-ok (fn [context] v)))]
+      (are [json data] (= json
+                          (to-string ((resource data) (json-request)))
+                          (to-string ((resource data) (json-request :verbose))))
+           "[\"~:foo\",\"~:foo\"]" [:foo :foo]
+           "{\"foo\":1}" {"foo" 1}))))

@@ -15,6 +15,47 @@
             [cognitect.transit :as transit])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
+(def default-options
+  "The default options for liberator-transit.
+
+  * `:support-json-verbose?`: if false, do not ever produce verrbose JSON
+    output
+  * `:json-verbose-is-default?`: if true, produce verbose JSON output by
+    default."
+  {:support-json-verbose? true
+   :json-verbose-is-default? false})
+
+(defn ^:private requested-verbose?
+  "Returns true if the givn Ring request contains an \"Accept\" header that
+  contains the string \"verbose\"."
+  [request]
+  (-> request
+      (get-in [:headers "accept"])
+      (.indexOf "verbose")
+      (pos?)))
+
+(defn ^:private json-type
+  "Returns which JSON type should be produced by liberator-transit depending on
+  the options passed in through the context and in the request headers.  The
+  options are stored in the context map under the `:liberator-transit` key.
+  The determination is done as follows:
+
+  1. If `:support-json-verbose?` option is set to a false value, return`:json`.
+  2. If the request contains \"verbose\" as part of the \"Accept\" header, then
+     return `:json-verbose`.
+  3. If `:json-verbose-is-default?` option is set to a true value,
+     return`:json-verbose`.
+  4. If none of the above apply, return `:json`."
+  [{:keys [liberator-transit request]}]
+  (let [{:keys [support-json-verbose?
+                json-verbose-is-default?]} (merge default-options
+                                                  liberator-transit)]
+    (cond
+      (not support-json-verbose?) :json
+      (requested-verbose? request) :json-verbose
+      json-verbose-is-default? :json-verbose
+      :default :json)))
+
 (defn ^:private render-as-transit
   "Renders the given `data` to an input stream.  Liberator will pass this
   stream to Ring, which will write the contents into the response.  `type`
@@ -31,10 +72,7 @@
 ;; default JSON encoding.
 (defmethod render-map-generic "application/transit+json"
   [data context]
-  (let [accept-header (get-in context [:request :headers "accept"])]
-    (if (pos? (.indexOf accept-header "verbose"))
-      (render-as-transit data :json-verbose)
-      (render-as-transit data :json))))
+  (render-as-transit data (json-type context)))
 
 ;; Renders a map using the MessagePack transit encoding.
 (defmethod render-map-generic "application/transit+msgpack"
@@ -47,10 +85,7 @@
 ;; default JSON encoding.
 (defmethod render-seq-generic "application/transit+json"
   [data context]
-  (let [accept-header (get-in context [:request :headers "accept"])]
-    (if (pos? (.indexOf accept-header "verbose"))
-      (render-as-transit data :json-verbose)
-      (render-as-transit data :json))))
+  (render-as-transit data (json-type context)))
 
 ;; Renders a sequence using the MessagePack transit encoding.
 (defmethod render-seq-generic "application/transit+msgpack"
