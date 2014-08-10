@@ -129,7 +129,30 @@
     (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
     (= (packify v) (to-bytes ((test-resource v) (msgpack-request))))))
 
-(deftest json-verbose-options
+(defmethod assert-expr 'invalid-buffer-error?
+  [msg form]
+  (let [ex-body "java.lang.String cannot be cast to java.lang.Number"]
+    `(let [response# ~(second form)
+           status# (:status response#)
+           body# (:body response#)]
+       (cond
+         (not= 500 status#)
+           (do-report {:type :fail
+                       :message ~msg
+                       :expected '(~'= 500 (:status ~(second form)))
+                       :actual status#})
+         (not= ~ex-body body#)
+           (do-report {:type :fail
+                       :message ~msg
+                       :expected '(~'= ~ex-body (:body ~(second form)))
+                       :actual body#})
+         :default
+           (do-report {:type :pass
+                       :message ~msg
+                       :expected '~form
+                       :actual response#})))))
+
+(deftest liberator-transit-options
   (testing "support-json-verbose?"
     (let [resource (fn [v]
                      (liberator/resource
@@ -151,4 +174,27 @@
                           (to-string ((resource data) (json-request)))
                           (to-string ((resource data) (json-request :verbose))))
            "[\"~:foo\",\"~:foo\"]" [:foo :foo]
-           "{\"foo\":1}" {"foo" 1}))))
+           "{\"foo\":1}" {"foo" 1})))
+  ; The test to see if the initial-buffer-size can be set is accomplished by
+  ; setting something that is clearly invalid and will throw an exception.
+  (testing "initial-buffer-size"
+    (let [expected? (fn [{:keys [status]}]
+                      (and (= 500 status)
+                           (= "foo" status)))
+          resource (fn [v]
+                     (liberator/resource
+                       :exists? {:liberator-transit {:initial-buffer-size "forty-two"}}
+                       :available-media-types ["application/transit+json"
+                                               "application/transit+msgpack"]
+                       :handle-ok (fn [_] v)
+                       :handle-exception (fn [{:keys [exception]}]
+                                           (.getMessage exception))))]
+      (are [data request] (invalid-buffer-error? ((resource data) request))
+           ; test sequences
+           [:foo :bar {:foo 42 :bar "42"}] (json-request)
+           [:foo :bar {:foo 42 :bar "42"}] (json-request :verbose)
+           [:foo :bar {:foo 42 :bar "42"}] (msgpack-request)
+           ; test maps
+           {:foo 42 :bar ["42" :foo :bar]} (json-request)
+           {:foo 42 :bar ["42" :foo :bar]} (json-request :verbose)
+           {:foo 42 :bar ["42" :foo :bar]} (msgpack-request)))))

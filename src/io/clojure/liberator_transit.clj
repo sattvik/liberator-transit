@@ -21,9 +21,14 @@
   * `:support-json-verbose?`: if false, do not ever produce verrbose JSON
     output
   * `:json-verbose-is-default?`: if true, produce verbose JSON output by
-    default."
+    default.
+  * `:initial-buffer-size`: The initial buffer size to use when generating the
+    output.  Note that the buffer will automatically grow as needed.  It
+    probably only makes sense to change this if you are serialising very large
+    objects."
   {:support-json-verbose? true
-   :json-verbose-is-default? false})
+   :json-verbose-is-default? false
+   :initial-buffer-size 4096})
 
 (defn ^:private requested-verbose?
   "Returns true if the givn Ring request contains an \"Accept\" header that
@@ -60,8 +65,12 @@
   "Renders the given `data` to an input stream.  Liberator will pass this
   stream to Ring, which will write the contents into the response.  `type`
   must be a supported transit-clj writer type, e.g. `:json`."
-  [data type]
-  (let [buffer (ByteArrayOutputStream. 4096)
+  [context data type]
+  (let [initial-size (get-in context
+                             [:liberator-transit
+                              :initial-buffer-size]
+                             (:initial-buffer-size default-options))
+        buffer (ByteArrayOutputStream. initial-size)
         writer (transit/writer buffer type)]
     (transit/write writer data)
     (ByteArrayInputStream. (.toByteArray buffer))))
@@ -72,12 +81,12 @@
 ;; default JSON encoding.
 (defmethod render-map-generic "application/transit+json"
   [data context]
-  (render-as-transit data (json-type context)))
+  (render-as-transit context data (json-type context)))
 
 ;; Renders a map using the MessagePack transit encoding.
 (defmethod render-map-generic "application/transit+msgpack"
-  [data _]
-  (render-as-transit data :msgpack))
+  [data context]
+  (render-as-transit context data :msgpack))
 
 ;; Renders a sequence using the JSON transit encoding.  If the original
 ;; "Accept" header included "verbose", i.e. `application/transit+json;verbose`,
@@ -85,9 +94,9 @@
 ;; default JSON encoding.
 (defmethod render-seq-generic "application/transit+json"
   [data context]
-  (render-as-transit data (json-type context)))
+  (render-as-transit context data (json-type context)))
 
 ;; Renders a sequence using the MessagePack transit encoding.
 (defmethod render-seq-generic "application/transit+msgpack"
-  [data _]
-  (render-as-transit data :msgpack))
+  [data context]
+  (render-as-transit context data :msgpack))
