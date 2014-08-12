@@ -64,7 +64,7 @@ curl -H "Accept: application/transit+json;verbose" \
 
 You can completely disable verbose JSON output by setting the
 :allow-json-verbose? option to a false value.  Additionally, by setting
-"josn-verbose-is-defaultt? to a true value, JSON responses will be verbose by
+:json-verbose-is-defaultt? to a true value, JSON responses will be verbose by
 default.  See the next section about setting options for more information.
 
 ### Setting options
