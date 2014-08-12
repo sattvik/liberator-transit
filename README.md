@@ -6,8 +6,12 @@ It supports JSON, verbose JSON, and MessagePack encodings.
 
 It is a fairly simple library, but it’s handy to have.
 
+[![Build Status](https://travis-ci.org/sattvik/liberator-transit.svg?branch=master)][build-status]
+
   [liberator]: http://clojure-liberator.github.io/liberator/
   [transit]: https://github.com/cognitect/transit-format
+  [build-status]: https://travis-ci.org/sattvik/liberator-transit (Travis CI build status)
+
 
 ## Installation
 
