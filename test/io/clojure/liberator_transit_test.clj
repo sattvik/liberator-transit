@@ -20,6 +20,11 @@
             [liberator.representation :as rep]
             [ring.mock.request :as mock]))
 
+(def num-generative-tests
+  (if (= (System/getenv "TRAVIS") "true")
+    50
+    80))
+
 (defresource test-resource [value]
   :available-media-types ["application/transit+json" "application/transit+msgpack"]
   :handle-ok value)
@@ -117,14 +122,14 @@
            [0x82 0xa3 0x7e 0x3a 0x61 0x80 0xa3 0x7e 0x3a 0x62 0x2a] {:a {} :b 42}))))
 
 (defspec generated-sequences
-  80
+  num-generative-tests
   (prop/for-all [v gen/sequence-generator]
     (= (jsonify v) (to-string ((test-resource v) (json-request))))
     (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
     (= (packify v) (to-bytes ((test-resource v) (msgpack-request))))))
 
 (defspec generated-maps
-  80
+  num-generative-tests
   (prop/for-all [v gen/map-generator]
     (= (jsonify v) (to-string ((test-resource v) (json-request))))
     (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
