@@ -123,6 +123,13 @@ would like to use, you can wrap it using transit-liberator’s `as-response`:
 Note that any options specified elsewhere in your resource definition will
 override any options set as part of the `as-response` call.
 
+## Contributors
+
+All contributors to liberator-transit by first commit:
+
+* Daniel Solano Gómez
+* Rafael Khan
+
 
 ## To-do
 
