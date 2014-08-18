@@ -260,3 +260,69 @@
            [0x92 0xa5 0x7e 0x3a 0x66 0x6f 0x6f 0xa2 0x5e 0x30] [:foo :foo]
            [0x81 0xa3 0x66 0x6f 0x6f 0x01] {"foo" 1}
            [0x91 0xa5 0x7e 0x3a 0x62 0x61 0x72] [:foo]))))
+
+(defrecord Point [x y])
+(defrecord Circle [centre radius])
+
+(deftest handlers
+  (let [round-trip (fn [type]
+                     (fn [{in :body}]
+                       (let [reader (transit/reader in type {:handlers {(.getName Point) (transit/read-handler #(map->Point %))
+                                                                        (.getName Circle) (transit/read-handler #(map->Circle %))}})]
+                         (transit/read reader))))]
+    (testing "With no handler"
+      (let [resource (fn [v]
+                       (liberator/resource
+                         :available-media-types ["application/transit+json"
+                                                 "application/transit+msgpack"]
+                         :handle-ok v))]
+        (are [out in] (= out ((round-trip :json) ((resource in) (json-request))))
+             [{:x 42 :y 73}] [(Point. 42 73)]
+             {:p {:x 42 :y 73}} {:p (Point. 42 73)}
+             [{:radius 1 :centre {:x 0 :y 0}}] [(Circle. (Point. 0 0) 1)])
+        (are [out in] (= out ((round-trip :json-verbose) ((resource in) (json-request :verbose))))
+             [{:x 42 :y 73}] [(Point. 42 73)]
+             {:p {:x 42 :y 73}} {:p (Point. 42 73)}
+             [{:radius 1 :centre {:x 0 :y 0}}] [(Circle. (Point. 0 0) 1)])
+        (are [out in] (= out ((round-trip :msgpack) ((resource in) (msgpack-request))))
+             [{:x 42 :y 73}] [(Point. 42 73)]
+             {:p {:x 42 :y 73}} {:p (Point. 42 73)}
+             [{:radius 1 :centre {:x 0 :y 0}}] [(Circle. (Point. 0 0) 1)])))
+    (testing "With point handler"
+      (let [resource (fn [v]
+                       (liberator/resource
+                         :available-media-types ["application/transit+json"
+                                                 "application/transit+msgpack"]
+                         :handle-ok v
+                         :as-response (lt/as-response {:handlers (transit/record-write-handlers Point)})))]
+        (are [out in] (= out ((round-trip :json) ((resource in) (json-request))))
+             [(Point. 42 73)] [(Point. 42 73)]
+             {:p (Point. 42 73)} {:p (Point. 42 73)}
+             [{:radius 1 :centre (Point. 0 0)}] [(Circle. (Point. 0 0) 1)])
+        (are [out in] (= out ((round-trip :json-verbose) ((resource in) (json-request :verbose))))
+             [(Point. 42 73)] [(Point. 42 73)]
+             {:p (Point. 42 73)} {:p (Point. 42 73)}
+             [{:radius 1 :centre (Point. 0 0)}] [(Circle. (Point. 0 0) 1)])
+        (are [out in] (= out ((round-trip :msgpack) ((resource in) (msgpack-request))))
+             [(Point. 42 73)] [(Point. 42 73)]
+             {:p (Point. 42 73)} {:p (Point. 42 73)}
+             [{:radius 1 :centre (Point. 0 0)}] [(Circle. (Point. 0 0) 1)])))
+    (testing "With point and circle handlers"
+      (let [resource (fn [v]
+                       (liberator/resource
+                         :available-media-types ["application/transit+json"
+                                                 "application/transit+msgpack"]
+                         :handle-ok v
+                         :as-response (lt/as-response {:handlers (transit/record-write-handlers Circle Point)})))]
+        (are [out in] (= out ((round-trip :json) ((resource in) (json-request))))
+             [(Point. 42 73)] [(Point. 42 73)]
+             {:p (Point. 42 73)} {:p (Point. 42 73)}
+             [(Circle. (Point. 0 0) 1)] [(Circle. (Point. 0 0) 1)])
+        (are [out in] (= out ((round-trip :json-verbose) ((resource in) (json-request :verbose))))
+             [(Point. 42 73)] [(Point. 42 73)]
+             {:p (Point. 42 73)} {:p (Point. 42 73)}
+             [(Circle. (Point. 0 0) 1)] [(Circle. (Point. 0 0) 1)])
+        (are [out in] (= out ((round-trip :msgpack) ((resource in) (msgpack-request))))
+             [(Point. 42 73)] [(Point. 42 73)]
+             {:p (Point. 42 73)} {:p (Point. 42 73)}
+             [(Circle. (Point. 0 0) 1)] [(Circle. (Point. 0 0) 1)])))))

@@ -75,13 +75,10 @@
   "Renders the given `data` to an input stream.  Liberator will pass this
   stream to Ring, which will write the contents into the response.  `type`
   must be a supported transit-clj writer type, e.g. `:json`."
-  [context data type]
-  (let [initial-size (get-in context
-                             [:liberator-transit
-                              :initial-buffer-size]
-                             (:initial-buffer-size default-options))
+  [{options :liberator-transit} data type]
+  (let [initial-size (get options :initial-buffer-size (:initial-buffer-size default-options))
         buffer (ByteArrayOutputStream. initial-size)
-        writer (transit/writer buffer type)]
+        writer (transit/writer buffer type (select-keys options [:handlers]))]
     (transit/write writer data)
     (->TransitResponse (ByteArrayInputStream. (.toByteArray buffer)))))
 
