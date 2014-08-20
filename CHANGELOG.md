@@ -1,6 +1,6 @@
 # transit-liberator changes
 
-## 0.3.0 (planned)
+## 0.3.0
 
 * Add support for write handlers
 

@@ -18,7 +18,7 @@ It is a fairly simple library, but it’s handy to have.
 To install, just add the following to your project :dependencies:
 
 ```clojure
-[io.clojure/liberator-transit "0.2.0"]
+[io.clojure.liberator-transit "0.3.0"]
 ```
 
 
@@ -81,6 +81,7 @@ The supported options include:
 * `:initial-buffer-size`: The initial buffer size to use when generating the
   output.  Note that the buffer will automatically grow as needed.  It probably
   only makes sense to change this if you are serialising very large objects.
+* `:handlers`: a map of write handlers that will be passed directly to transit
 
 liberator-transit looks for its options in the Liberator context under they key
 `:liberator-transit`.  As such you can set options anywhere in your resource
@@ -136,9 +137,10 @@ All contributors to liberator-transit by first commit:
 I am not sure what might be desired by user of the library, but a few ideas I
 have include:
 
-* Support configuration of Transit write handlers (coming in 0.3.0)
 * Write a proper URI generator for the tests
 * Write a Transit link generator for the tests
+* Should liberator-transit modify the content type or add additional headers to
+  let the consumer know it is producing verbose JSON?
 
 ## License
 
