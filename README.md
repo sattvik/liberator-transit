@@ -18,7 +18,7 @@ It is a fairly simple library, but it’s handy to have.
 To install, just add the following to your project :dependencies:
 
 ```clojure
-[io.clojure.liberator-transit "0.3.0"]
+ [io.clojure/liberator-transit "0.3.0"]
 ```
 
 
