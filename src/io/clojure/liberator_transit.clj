@@ -34,10 +34,10 @@
   "Returns true if the givn Ring request contains an \"Accept\" header that
   contains the string \"verbose\"."
   [request]
-  (-> request
-      (get-in [:headers "accept"])
-      (.indexOf "verbose")
-      (pos?)))
+  (some-> request
+          (get-in [:headers "accept"])
+          (.indexOf "verbose")
+          (pos?)))
 
 (defn ^:private json-type
   "Returns which JSON type should be produced by liberator-transit depending on
