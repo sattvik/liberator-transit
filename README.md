@@ -130,6 +130,7 @@ All contributors to liberator-transit by first commit:
 
 * Daniel Solano Gómez
 * Rafael Khan
+* Alexander Kiel
 
 
 ## To-do
