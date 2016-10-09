@@ -132,6 +132,7 @@ All contributors to liberator-transit by first commit:
 * Daniel Solano Gómez
 * Rafael Khan
 * Alexander Kiel
+* Steve Miner
 
 
 ## To-do
