@@ -1,4 +1,4 @@
-(defproject io.clojure/liberator-transit "0.3.1"
+(defproject io.clojure/liberator-transit "0.3.2-SNAPSHOT"
   :description "Library to add Transit encoding support to Liberator"
   :url "https://github.com/sattvik/liberator-transit"
   :license {:name "Eclipse Public License"
