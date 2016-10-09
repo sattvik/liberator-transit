@@ -1,5 +1,10 @@
 # transit-liberator changes
 
+## 0.3.1
+
+* Fix bug when `Accept` header is missing #6, #12
+* Update dependencies
+
 ## 0.3.0
 
 * Add support for write handlers
