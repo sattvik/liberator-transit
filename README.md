@@ -19,7 +19,7 @@ It is a fairly simple library, but it’s handy to have.
 To install, just add the following to your project :dependencies:
 
 ```clojure
-[io.clojure/liberator-transit "x.y.z"]
+[io.clojure/liberator-transit "0.3.1"]
 ```
 
 
@@ -129,11 +129,24 @@ override any options set as part of the `as-response` call.
 
 All contributors to liberator-transit by first commit:
 
-* Daniel Solano Gómez
-* Rafael Khan
-* Alexander Kiel
-* Steve Miner
+* Daniel Solano Gómez (sattvik)
+* Rafael Khan (rafkhan)
+* Alexander Kiel (alexanderkiel)
+* Steve Miner (miner)
 
+Additionally, a special thanks to the following people for pointing out an
+error in my README, which I ignored for far too long:
+
+* Rafael Khan (rafkhan)
+* Lucas Bradstreet (lbradstreet)
+* Tero Parviainen (teropa)
+* Kristian Frøhlich Hansen (kfh)
+* David Whittington (djwhitt)
+* Mike Janger (inchingforward)
+* Brian Jenkins (bonkydog)
+* Dan Kersten (danielytics)
+* spieden
+* itkach
 
 ## To-do
 
@@ -147,7 +160,7 @@ have include:
 
 ## License
 
-Copyright © 2014 Daniel Solano Gómez
+Copyright © 2014-2016 Daniel Solano Gómez
 All rights reserved.
 
 The use and distribution terms for this software are covered by the Eclipse
