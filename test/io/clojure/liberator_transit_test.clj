@@ -25,9 +25,10 @@
   :handle-ok value)
 
 (defn make-request
-  [type]
-  (-> (mock/request :get "/")
-      (mock/header "Accept" type)))
+  ([] (make-request nil))
+  ([type]
+   (cond-> (mock/request :get "/")
+           type (mock/header "Accept" type))))
 
 (defn json-request
   ([]
@@ -204,10 +205,14 @@
        ; sequences
        "application/transit+json"    [] (json-request)
        "application/transit+json"    [] (json-request :verbose)
+       "application/transit+json"    [] (make-request)
+       "application/transit+json"    [] (make-request "*/*")
        "application/transit+msgpack" [] (msgpack-request)
        ; maps
        "application/transit+json"    {} (json-request)
        "application/transit+json"    {} (json-request :verbose)
+       "application/transit+json"    {} (make-request)
+       "application/transit+json"    {} (make-request "*/*")
        "application/transit+msgpack" {} (msgpack-request)))
 
 (deftest as-response
