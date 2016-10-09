@@ -120,16 +120,16 @@
 (defspec generated-sequences
   {:max-size 50}
   (prop/for-all [v gen/sequence-generator]
-    (= (jsonify v) (to-string ((test-resource v) (json-request))))
-    (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
-    (= (packify v) (to-bytes ((test-resource v) (msgpack-request))))))
+    (and (= (jsonify v) (to-string ((test-resource v) (json-request))))
+         (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
+         (= (packify v) (to-bytes ((test-resource v) (msgpack-request)))))))
 
 (defspec generated-maps
   {:max-size 50}
   (prop/for-all [v gen/map-generator]
-    (= (jsonify v) (to-string ((test-resource v) (json-request))))
-    (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
-    (= (packify v) (to-bytes ((test-resource v) (msgpack-request))))))
+    (and (= (jsonify v) (to-string ((test-resource v) (json-request))))
+         (= (jsonify v :verbose) (to-string ((test-resource v) (json-request :verbose))))
+         (= (packify v) (to-bytes ((test-resource v) (msgpack-request)))))))
 
 (defmethod assert-expr 'invalid-buffer-error?
   [msg form]
