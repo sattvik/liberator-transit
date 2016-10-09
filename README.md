@@ -7,6 +7,7 @@ It supports JSON, verbose JSON, and MessagePack encodings.
 It is a fairly simple library, but it’s handy to have.
 
 [![Build Status](https://travis-ci.org/sattvik/liberator-transit.svg?branch=master)][build-status]
+[![Clojars Project](https://img.shields.io/clojars/v/io.clojure/liberator-transit.svg)](https://clojars.org/io.clojure/liberator-transit)
 
   [liberator]: http://clojure-liberator.github.io/liberator/
   [transit]: https://github.com/cognitect/transit-format
@@ -18,7 +19,7 @@ It is a fairly simple library, but it’s handy to have.
 To install, just add the following to your project :dependencies:
 
 ```clojure
-[io.clojure/liberator-transit "0.3.0"]
+[io.clojure/liberator-transit "x.y.z"]
 ```
 
 
